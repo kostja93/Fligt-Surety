@@ -7,13 +7,12 @@ contract FlightSuretyData {
 
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
-    address[] private airlines;
-    mapping(address => uint) private funding;
+    mapping(address => bool) authorizedContracts;
+
     mapping(address => uint) private votes;
 
     constructor() public {
         contractOwner = msg.sender;
-        registerAirline();
     }
 
     modifier requireIsOperational() {
@@ -26,6 +25,11 @@ contract FlightSuretyData {
         _;
     }
 
+    modifier isAuthorized() {
+      require(authorizedContracts[msg]);
+      _;
+    }
+
     function isOperational() public view returns(bool) {
         return operational;
     }
@@ -34,23 +38,19 @@ contract FlightSuretyData {
         operational = mode;
     }
 
-    function registerAirline() external pure {
-      if(airlines.length == 0) airlines.push(msg.sender);
-      if(airlines.length <= 4) airlines.push(msg.sender);
-      if(votes[msg.sender] > airlines.length.div(2)) airlines.push(msg.sender);
+    function authorizeContract(address contrakt) external requireContractOwner {
+      authorizeContracts[contrakt] = true;
     }
 
+    function deauthorizeContract(address contrakt) external requireContractOwner {
+      delete authorizeContracts[contrakt];
+    }
 
    /**
     * @dev Buy insurance for a flight
     *
     */   
-    function buy
-                            (                             
-                            )
-                            external
-                            payable
-    {
+    function buy() external payable {
 
     }
 
