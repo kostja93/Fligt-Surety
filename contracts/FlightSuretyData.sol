@@ -9,10 +9,17 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) authorizedContracts;
 
+    struct Airline {
+      uint funding;
+    }
+
+    uint private airlineCount = 0;
+    mapping(address => Airline) private airlines;
     mapping(address => uint) private votes;
 
     constructor() public {
         contractOwner = msg.sender;
+        airlines[msg.sender] = Airline(0);
     }
 
     modifier requireIsOperational() {
@@ -26,7 +33,12 @@ contract FlightSuretyData {
     }
 
     modifier isAuthorized() {
-      require(authorizedContracts[msg]);
+      require(authorizedContracts[msg.sender]);
+      _;
+    }
+
+    modifier isAirline() {
+      require(airlines[msg.sender].funding >= 10 ether);
       _;
     }
 
@@ -39,11 +51,16 @@ contract FlightSuretyData {
     }
 
     function authorizeContract(address contrakt) external requireContractOwner {
-      authorizeContracts[contrakt] = true;
+      authorizedContracts[contrakt] = true;
     }
 
     function deauthorizeContract(address contrakt) external requireContractOwner {
-      delete authorizeContracts[contrakt];
+      delete authorizedContracts[contrakt];
+    }
+
+    function registerAirline(address airline) external isAuthorized requireIsOperational isAirline{
+      if( airlineCount < 4 || votes[airline]++ > airlineCount.div(2) )
+        airlines[airline] = Airline(0);
     }
 
    /**
