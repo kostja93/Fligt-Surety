@@ -37,11 +37,6 @@ contract FlightSuretyData {
       _;
     }
 
-    modifier isAirline() {
-      require(airlines[msg.sender].funding >= 10 ether);
-      _;
-    }
-
     function isOperational() public view returns(bool) {
         return operational;
     }
@@ -50,15 +45,19 @@ contract FlightSuretyData {
         operational = mode;
     }
 
-    function authorizeContract(address contrakt) external requireContractOwner {
-      authorizedContracts[contrakt] = true;
+    function authorizeCaller(address caller) external requireContractOwner {
+      authorizedContracts[caller] = true;
     }
 
-    function deauthorizeContract(address contrakt) external requireContractOwner {
-      delete authorizedContracts[contrakt];
+    function deauthorizeCaller(address caller) external requireContractOwner {
+      delete authorizedContracts[caller];
     }
 
-    function registerAirline(address airline) external isAuthorized requireIsOperational isAirline{
+    function isAirline(address airline) external view returns(bool) {
+      return airlines[airline].funding >= 10 ether;
+    }
+
+    function registerAirline(address airline) external isAuthorized requireIsOperational {
       if( airlineCount < 4 || votes[airline]++ > airlineCount.div(2) )
         airlines[airline] = Airline(0);
     }
