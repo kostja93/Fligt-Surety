@@ -144,4 +144,12 @@ contract('Flight Surety Tests', async (accounts) => {
 
     assert.equal(await config.flightSuretyData.isAirline.call(accounts[6]), false, 'Airline was registered')
   })
+
+  it('(airline) can register a flight', async() => {
+    let randomAirline = accounts[ Math.floor( Math.random() * 4 ) + 1 ]
+    await config.flightSuretyApp.registerFlight('ND 1309', Date.now(), { from: randomAirline })
+    assert.ok(true)
+  })
+
+  it('(passenger) can buy insurance for a flight')
 });
