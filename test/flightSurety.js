@@ -71,6 +71,11 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+  it('(airline) is registered when contract is deployed', async () => {
+    let result = await config.flightSuretyData.isAirline.call(config.firstAirline);
+    assert.equal(result, true, 'First Airline was not registered')
+  })
+
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
     // ARRANGE
@@ -89,6 +94,4 @@ contract('Flight Surety Tests', async (accounts) => {
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
- 
-
 });

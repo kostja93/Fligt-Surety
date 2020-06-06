@@ -11,15 +11,18 @@ contract FlightSuretyData {
 
     struct Airline {
       uint funding;
+      address[] votes;
+      bool isRegistered;
     }
 
     uint private airlineCount = 0;
     mapping(address => Airline) private airlines;
     mapping(address => uint) private votes;
 
-    constructor() public {
+    constructor(address airline) public {
         contractOwner = msg.sender;
-        airlines[msg.sender] = Airline(0);
+        airlines[airline].isRegistered = true;
+        airlineCount = 1;
     }
 
     modifier requireIsOperational() {
@@ -34,6 +37,11 @@ contract FlightSuretyData {
 
     modifier isAuthorized() {
       require(authorizedContracts[msg.sender]);
+      _;
+    }
+
+    modifier canParticipate(address airline) {
+      require(airlines[airline].isRegistered && airlines[airline].funding >= 10 ether);
       _;
     }
 
@@ -54,12 +62,17 @@ contract FlightSuretyData {
     }
 
     function isAirline(address airline) external view returns(bool) {
-      return airlines[airline].funding >= 10 ether;
+      return airlines[airline].isRegistered;
     }
 
-    function registerAirline(address airline) external isAuthorized requireIsOperational {
-      if( airlineCount < 4 || votes[airline]++ > airlineCount.div(2) )
-        airlines[airline] = Airline(0);
+    function registerAirline(address newAirline, address voter) external isAuthorized requireIsOperational canParticipate(voter) returns(uint){
+      require(this.isAirline(voter));
+      Airline storage airline = airlines[newAirline];
+      airline.votes.push(voter);
+      if ( airlineCount <= 4 || airline.votes.length >= airlineCount.div(2) ) {
+        airline.isRegistered = true;
+        airlineCount++;
+      }
     }
 
    /**
@@ -99,12 +112,8 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    function fund
-                            (   
-                            )
-                            public
-                            payable
-    {
+    function fund() public payable {
+
     }
 
     function getFlightKey

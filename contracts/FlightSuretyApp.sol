@@ -34,32 +34,18 @@ contract FlightSuretyApp {
         _;
     }
 
-    constructor(address dataContract) public {
+    constructor(address dataContractAddress) public {
         contractOwner = msg.sender;
-        dataContract = FlightSurety(dataContract);
+        dataContract = FlightSurety(dataContractAddress);
     }
 
     function isOperational() public view returns(bool) {
         return dataContract.isOperational();
     }
 
-    /********************************************************************************************/
-    /*                                     SMART CONTRACT FUNCTIONS                             */
-    /********************************************************************************************/
-
-  
-   /**
-    * @dev Add an airline to the registration queue
-    *
-    */   
-    function registerAirline
-                            (   
-                            )
-                            external
-                            pure
-                            returns(bool success, uint256 votes)
-    {
-        return (success, 0);
+    function registerAirline(address newAirline) external returns(bool success, uint256 votes) {
+        votes = dataContract.registerAirline(newAirline);
+        return (votes > 0, votes);
     }
 
 
@@ -290,4 +276,5 @@ contract FlightSuretyApp {
 
 contract FlightSurety {
   function isOperational() public view returns(bool);
+  function registerAirline(address) public returns(uint);
 }
