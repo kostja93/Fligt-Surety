@@ -44,8 +44,7 @@ contract FlightSuretyApp {
     }
 
     function registerAirline(address newAirline) external returns(bool success, uint256 votes) {
-        votes = dataContract.registerAirline(newAirline);
-        return (votes > 0, votes);
+        (success, votes) = dataContract.registerAirline(newAirline, msg.sender);
     }
 
 
@@ -276,5 +275,5 @@ contract FlightSuretyApp {
 
 contract FlightSurety {
   function isOperational() public view returns(bool);
-  function registerAirline(address) public returns(uint);
+  function registerAirline(address, address) public returns(bool, uint);
 }

@@ -77,7 +77,6 @@ contract('Flight Surety Tests', async (accounts) => {
   })
 
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
-    
     // ARRANGE
     let newAirline = accounts[2];
 
@@ -88,10 +87,37 @@ contract('Flight Surety Tests', async (accounts) => {
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    let result = await config.flightSuretyData.isAirline.call(newAirline);
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+  });
 
+  it('(airline) can submit funding', async() => {
+    let result = false
+    try {
+      await config.flightSuretyData.fund({ from: config.firstAirline, value: web3.utils.toWei('10', 'ether') });
+      result = true
+    } catch(e) {
+      console.error(e)
+    }
+    assert.equal(result, true, 'An error happend while funding')
+  })
+
+  it('(airline) can register an Airline using registerAirline() after it is funded', async () => {
+    // ARRANGE
+    let newAirline = accounts[2];
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+    }
+    catch(e) {
+
+    }
+    let result = await config.flightSuretyData.isAirline.call(newAirline);
+
+    // ASSERT
+    assert.equal(result, true, "Airline should be able to register another airline if it has provided funding");
   });
 });

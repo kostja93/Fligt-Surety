@@ -17,7 +17,6 @@ contract FlightSuretyData {
 
     uint private airlineCount = 0;
     mapping(address => Airline) private airlines;
-    mapping(address => uint) private votes;
 
     constructor(address airline) public {
         contractOwner = msg.sender;
@@ -65,7 +64,7 @@ contract FlightSuretyData {
       return airlines[airline].isRegistered;
     }
 
-    function registerAirline(address newAirline, address voter) external isAuthorized requireIsOperational canParticipate(voter) returns(uint){
+    function registerAirline(address newAirline, address voter) external isAuthorized requireIsOperational canParticipate(voter) returns(bool, uint){
       require(this.isAirline(voter));
       Airline storage airline = airlines[newAirline];
       airline.votes.push(voter);
@@ -73,6 +72,7 @@ contract FlightSuretyData {
         airline.isRegistered = true;
         airlineCount++;
       }
+      return (airline.isRegistered, airline.votes.length);
     }
 
    /**
@@ -107,13 +107,8 @@ contract FlightSuretyData {
     {
     }
 
-   /**
-    * @dev Initial funding for the insurance. Unless there are too many delayed flights
-    *      resulting in insurance payouts, the contract should be self-sustaining
-    *
-    */   
     function fund() public payable {
-
+      airlines[msg.sender].funding += msg.value;
     }
 
     function getFlightKey
