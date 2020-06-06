@@ -11,7 +11,8 @@ contract FlightSuretyData {
 
     struct Airline {
       uint funding;
-      address[] votes;
+      mapping(address => bool) voters;
+      uint votes;
       bool isRegistered;
     }
 
@@ -67,12 +68,15 @@ contract FlightSuretyData {
     function registerAirline(address newAirline, address voter) external isAuthorized requireIsOperational canParticipate(voter) returns(bool, uint){
       require(this.isAirline(voter));
       Airline storage airline = airlines[newAirline];
-      airline.votes.push(voter);
-      if ( airlineCount <= 4 || airline.votes.length >= airlineCount.div(2) ) {
+      if(airline.voters[voter] == false) {
+        airline.voters[voter] = true;
+        airline.votes++;
+      }
+      if ( airlineCount <= 4 || airline.votes >= airlineCount.div(2) ) {
         airline.isRegistered = true;
         airlineCount++;
       }
-      return (airline.isRegistered, airline.votes.length);
+      return (airline.isRegistered, airline.votes);
     }
 
    /**

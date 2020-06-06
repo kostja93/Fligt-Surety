@@ -120,4 +120,28 @@ contract('Flight Surety Tests', async (accounts) => {
     // ASSERT
     assert.equal(result, true, "Airline should be able to register another airline if it has provided funding");
   });
+
+  it('(airline) has at least two votes to be registered as fifth airline', async() => {
+    // Register 4 airlines with 10 ether funding
+    await config.flightSuretyApp.registerAirline(accounts[3], {from: config.firstAirline});
+    await config.flightSuretyApp.registerAirline(accounts[4], {from: config.firstAirline});
+    await config.flightSuretyData.fund({ from: accounts[2], value: web3.utils.toWei('10', 'ether') });
+    await config.flightSuretyData.fund({ from: accounts[3], value: web3.utils.toWei('10', 'ether') });
+    await config.flightSuretyData.fund({ from: accounts[4], value: web3.utils.toWei('10', 'ether') });
+
+    // Vote for fifth airline
+    await config.flightSuretyApp.registerAirline(accounts[5], {from: accounts[3]});
+    await config.flightSuretyApp.registerAirline(accounts[5], {from: accounts[4]});
+
+    assert.equal(await config.flightSuretyData.isAirline.call(accounts[5]), true, 'Airline was not registered')
+  })
+
+  it('(airline) has at least three seperate votes to be registered as sixth airline', async() => {
+    // Vote for fifth airline
+    await config.flightSuretyApp.registerAirline(accounts[6], {from: accounts[3]});
+    await config.flightSuretyApp.registerAirline(accounts[6], {from: accounts[4]});
+    await config.flightSuretyApp.registerAirline(accounts[6], {from: accounts[4]});
+
+    assert.equal(await config.flightSuretyData.isAirline.call(accounts[6]), false, 'Airline was registered')
+  })
 });
