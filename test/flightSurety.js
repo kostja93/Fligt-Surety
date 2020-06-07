@@ -147,9 +147,23 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it('(airline) can register a flight', async() => {
     let randomAirline = accounts[ Math.floor( Math.random() * 4 ) + 1 ]
-    await config.flightSuretyApp.registerFlight('ND 1309', Date.now(), { from: randomAirline })
+    await config.flightSuretyApp.registerFlight('ND 1309', 1591443524064, { from: randomAirline })
     assert.ok(true)
   })
 
-  it('(passenger) can buy insurance for a flight')
+  it('(passenger) can not buy insurance with 2 ether for a flight', async() => {
+    let randomPassenger = accounts[ Math.floor( Math.random() * 3) + 7 ]
+    try {
+      await config.flightSuretyData.buy('ND 1309', 1591443524064, { from: randomPassenger, value: 2 })
+      assert.ok(false)
+    } catch(e) {
+      assert.ok(true)
+    }
+  })
+
+  it('(passenger) can buy insurance with 1 ether for a flight', async() => {
+    let randomPassenger = accounts[ Math.floor( Math.random() * 3) + 7 ]
+    await config.flightSuretyData.buy('ND 1309', 1591443524064, { from: randomPassenger, value: 2 })
+    assert.ok(true)
+  })
 });

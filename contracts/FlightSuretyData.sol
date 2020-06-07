@@ -19,6 +19,13 @@ contract FlightSuretyData {
     uint private airlineCount = 0;
     mapping(address => Airline) private airlines;
 
+    struct Insurance {
+      string flight;
+      uint256 timestamp;
+      uint payment;
+    }
+    mapping(address => Insurance[]) private insurances;
+
     constructor(address airline) public {
         contractOwner = msg.sender;
         airlines[airline].isRegistered = true;
@@ -42,6 +49,11 @@ contract FlightSuretyData {
 
     modifier canParticipate(address airline) {
       require(airlines[airline].isRegistered && airlines[airline].funding >= 10 ether);
+      _;
+    }
+
+    modifier allowMax1Ether() {
+      require(msg.value <= 1 ether);
       _;
     }
 
@@ -79,12 +91,8 @@ contract FlightSuretyData {
       return (airline.isRegistered, airline.votes);
     }
 
-   /**
-    * @dev Buy insurance for a flight
-    *
-    */   
-    function buy() external payable {
-
+    function buy(string flight, uint256 timestamp) external payable requireIsOperational allowMax1Ether {
+      insurances[msg.sender].push(Insurance({ flight: flight, timestamp: timestamp, payment: msg.value }));
     }
 
     /**
@@ -111,7 +119,7 @@ contract FlightSuretyData {
     {
     }
 
-    function fund() public payable {
+    function fund() public payable requireIsOperational {
       airlines[msg.sender].funding += msg.value;
     }
 
