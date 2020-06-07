@@ -23,6 +23,7 @@ contract FlightSuretyData {
 
     mapping(address => uint) private credits;
     address[] insurees;
+    uint private counter = 1;
 
     constructor(address airline) public {
         contractOwner = msg.sender;
@@ -53,6 +54,13 @@ contract FlightSuretyData {
     modifier allowMax1Ether() {
       require(msg.value <= 1 ether);
       _;
+    }
+
+    modifier entrancyGuard() {
+      counter = counter.add(1);
+      uint256 guard = counter;
+      _;
+      require(guard == counter, "That is not allowed");
     }
 
     function isOperational() public view returns(bool) {
