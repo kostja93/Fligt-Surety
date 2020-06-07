@@ -154,7 +154,7 @@ contract('Flight Surety Tests', async (accounts) => {
   it('(passenger) can not buy insurance with 2 ether for a flight', async() => {
     let randomPassenger = accounts[7]
     try {
-      await config.flightSuretyData.buy(accounts[3], 'ND 1309', 1591443524064, { from: randomPassenger, value: 2 })
+      await config.flightSuretyData.buy(accounts[3], 'ND 1309', 1591443524064, { from: randomPassenger, value: web3.utils.toWei('2', 'ether') })
       assert.ok(false)
     } catch(e) {
       assert.ok(true)
@@ -163,7 +163,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it('(passenger) can buy insurance with 1 ether for a flight', async() => {
     let randomPassenger = accounts[7]
-    await config.flightSuretyData.buy(accounts[3], 'ND 1309', 1591443524064, { from: randomPassenger, value: 1 })
+    await config.flightSuretyData.buy(accounts[3], 'ND 1309', 1591443524064, { from: randomPassenger, value: web3.utils.toWei('1', 'ether') })
     assert.ok(true)
   })
 
@@ -171,5 +171,11 @@ contract('Flight Surety Tests', async (accounts) => {
     let randomPassenger = accounts[7]
     await config.flightSuretyData.creditInsurees(accounts[3], 'ND 1309', 1591443524064)
     assert.ok(true);
+  })
+
+  it('(passenger) withdraws refund', async () => {
+    let randomPassenger = accounts[7]
+    await config.flightSuretyData.pay({ from: randomPassenger })
+    assert.ok(true)
   })
 });

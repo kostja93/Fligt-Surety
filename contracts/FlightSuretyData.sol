@@ -108,7 +108,10 @@ contract FlightSuretyData {
       }
     }
     
-    function pay () external pure {
+    function pay () external payable requireIsOperational {
+      uint refund = credits[msg.sender];
+      credits[msg.sender] = 0;
+      if(refund > 0) msg.sender.transfer(refund);
     }
 
     function fund() public payable requireIsOperational {
