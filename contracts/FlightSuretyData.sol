@@ -19,12 +19,10 @@ contract FlightSuretyData {
     uint private airlineCount = 0;
     mapping(address => Airline) private airlines;
 
-    struct Insurance {
-      string flight;
-      uint256 timestamp;
-      uint payment;
-    }
-    mapping(address => Insurance[]) private insurances;
+    mapping(address => mapping(bytes32 => uint)) private insurances;
+
+    mapping(address => uint) private credits;
+    address[] insurees;
 
     constructor(address airline) public {
         contractOwner = msg.sender;
@@ -91,62 +89,38 @@ contract FlightSuretyData {
       return (airline.isRegistered, airline.votes);
     }
 
-    function buy(string flight, uint256 timestamp) external payable requireIsOperational allowMax1Ether {
-      insurances[msg.sender].push(Insurance({ flight: flight, timestamp: timestamp, payment: msg.value }));
+    function buy(address airline, string flight, uint256 timestamp) external payable requireIsOperational allowMax1Ether {
+      address passenger = msg.sender;
+      bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+      uint payment = msg.value;
+
+      insurances[passenger][flightKey] = payment;
+      insurees.push(passenger);
     }
 
-    /**
-     *  @dev Credits payouts to insurees
-    */
-    function creditInsurees
-                                (
-                                )
-                                external
-                                pure
-    {
+    function creditInsurees(address airline, string flight, uint256 timestamp) external requireIsOperational {
+      bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+      for(uint i = 0; i < insurees.length; i++) {
+        address passenger = insurees[i];
+        uint creditAmount = insurances[passenger][flightKey].add( insurances[passenger][flightKey].div(2) );
+        credits[passenger] = credits[passenger].add(creditAmount);
+      }
     }
     
-
-    /**
-     *  @dev Transfers eligible payout funds to insuree
-     *
-    */
-    function pay
-                            (
-                            )
-                            external
-                            pure
-    {
+    function pay () external pure {
     }
 
     function fund() public payable requireIsOperational {
       airlines[msg.sender].funding += msg.value;
     }
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string memory flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32) 
-    {
+    function getFlightKey(address airline, string memory flight, uint256 timestamp) pure internal returns(bytes32) {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    /**
-    * @dev Fallback function for funding smart contract.
-    *
-    */
-    function() 
-                            external 
-                            payable 
-    {
+    function() external payable {
         fund();
     }
-
-
 }
 
