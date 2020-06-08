@@ -175,7 +175,9 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it('(passenger) withdraws refund', async () => {
     let randomPassenger = accounts[7]
+    let passengerBalance = await web3.eth.getBalance(randomPassenger)
     await config.flightSuretyData.pay({ from: randomPassenger })
-    assert.ok(true)
+    let differencePassengerBalance = parseInt(((await web3.eth.getBalance(randomPassenger)) - passengerBalance) / 1000000000000000)
+    assert.equal(differencePassengerBalance, 1499, 'to little withdraw')
   })
 });
